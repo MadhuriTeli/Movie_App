@@ -1,4 +1,4 @@
-//import 'dart:convert';
+// Movie App to list popular movies fetched from TMDB API
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
