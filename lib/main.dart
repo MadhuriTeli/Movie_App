@@ -46,10 +46,15 @@ class MoviesListing extends StatefulWidget {
 class _MoviesListingState extends State<MoviesListing> {
   List<MovieModel> movies = List<MovieModel>();
 
+  //Keeping a counter to track network requests
+  int counter = 0;
+
   fetchMovies() async {
     var data = await MoviesProvider.getJson();
 
     setState(() {
+      //Increasing counter to track number of times method is called.
+      counter++;
       var results = data['results'];
 
       //Creating list of MovieModel objects
@@ -62,8 +67,14 @@ class _MoviesListingState extends State<MoviesListing> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
     fetchMovies();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // fetchMovies();
 
     return Scaffold(
       body: ListView.builder(
@@ -75,7 +86,13 @@ class _MoviesListingState extends State<MoviesListing> {
             //Padding around the list item
             padding: const EdgeInsets.all(8.0),
             //UPDATED CODE: Using MovieTile object to render movie's title, description and image
-            child: MovieTile(movies, index),
+            child: Column(
+              children: [
+                MovieTile(movies, index),
+                //Widget added to print number of requests made to fetch movies
+                Text("Movies fetched: $counter"),
+              ],
+            ),
           );
         },
       ),
@@ -146,12 +163,13 @@ class MovieTile extends StatelessWidget {
           //Styling movie's description text
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Text(movies[index].overview,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontStyle: FontStyle.italic,
-                ),
-                ),
+            child: Text(
+              movies[index].overview,
+              style: TextStyle(
+                fontSize: 20,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
           ),
           Divider(color: Colors.grey.shade500),
         ],
