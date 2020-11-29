@@ -46,81 +46,143 @@ class MoviesListing extends StatefulWidget {
 class _MoviesListingState extends State<MoviesListing> {
   List<MovieModel> movies = List<MovieModel>();
 
-  //varialbe to hold movies information
- // var movies;
-
   fetchMovies() async {
     var data = await MoviesProvider.getJson();
 
-    //Updating data and  requesting to rebuild widget
     setState(() {
-     List<dynamic> results = data['results'];
+      var results = data['results'];
+
+      //Creating list of MovieModel objects
       results.forEach((element) {
-        movies.add(MovieModel.fromJson(element));
+        movies.add(
+          MovieModel.fromJson(element),
+        );
       });
-      //storing movies list in 'movies' variable
-      //movies = data['results'];
     });
   }
-/*
-  //method to make http requests
-  static dynamic getJson() async {
-    //URL to fetch movies information
-    final apiEndPoint =
-        "http://api.themoviedb.org/3/discover/movie?api_key=$apiKey&sort_by=popularity.desc";
-    final apiResponse = await http.get(apiEndPoint);
-
-    //instance of response
-    return apiResponse;
-  }
-
-  //method  to fetch moves from network
-  fetchMovies() async {
-    //getting json
-    var data = await getJson();
-    setState(() {
-      movies = data;
-    });
-  }*/
 
   @override
   Widget build(BuildContext context) {
-    //Fetch Movies
     fetchMovies();
 
     return Scaffold(
-      //rendering movies in ListView
       body: ListView.builder(
-          itemCount: movies == null ? 0 : movies.length,
-          itemBuilder: (context, index) {
-            return Padding(
-              //adding padding around the list row
-              padding: const EdgeInsets.all(8.0),
-
-              //displaying title of the movie only for now
-              // child: Text(movies[index]["title"]),
-              child: Text(movies[index].title),
-            );
-          }),
+        //Calculating list size
+        itemCount: movies == null ? 0 : movies.length,
+        //Building list view entries
+        itemBuilder: (context, index) {
+          return Padding(
+            //Padding around the list item
+            padding: const EdgeInsets.all(8.0),
+            //UPDATED CODE: Using MovieTile object to render movie's title, description and image
+            child: MovieTile(movies, index),
+          );
+        },
+      ),
     );
   }
 }
 
-//JSON response is converted into MovieModel object
+//NEW CODE: MovieTile object to render visually appealing movie information
+class MovieTile extends StatelessWidget {
+  final List<MovieModel> movies;
+  final index;
+
+  const MovieTile(this.movies, this.index);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: <Widget>[
+          //Resizing image poster based on the screen size whenever image's path is not null.
+//Resizing image poster based on the screen size whenever the image's path is not null.
+          movies[index].poster_path != null
+              ? Container(
+                  //Making image's width to half of the given screen size
+                  width: MediaQuery.of(context).size.width / 2,
+
+                  //Making image's height to one fourth of the given screen size
+                  height: MediaQuery.of(context).size.height / 4,
+
+                  //Making image box visually appealing by dropping shadow
+                  decoration: BoxDecoration(
+                    //Making image box slightly curved
+                    borderRadius: BorderRadius.circular(10.0),
+                    //Setting box's color to grey
+                    color: Colors.grey,
+
+                    //Decorating image
+                    image: DecorationImage(
+                        image: NetworkImage(MoviesProvider.imagePathPrefix +
+                            movies[index].poster_path),
+                        //Image getting all the available space
+                        fit: BoxFit.cover),
+
+                    //Dropping shadow
+                    boxShadow: [
+                      BoxShadow(
+                          //grey colored shadow
+                          color: Colors.grey,
+                          //Applying softening effect
+                          blurRadius: 3.0,
+                          //move 1.0 to right (horizontal), and 3.0 to down (vertical)
+                          offset: Offset(1.0, 3.0)),
+                    ],
+                  ),
+                )
+              : Container(), //Empty container when image is not available
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              movies[index].title,
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black),
+            ),
+          ),
+          //Styling movie's description text
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(movies[index].overview,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontStyle: FontStyle.italic,
+                ),
+                ),
+          ),
+          Divider(color: Colors.grey.shade500),
+        ],
+      ),
+    );
+  }
+}
+
+//MovielModel object
 class MovieModel {
   final int id;
   final num popularity;
+  // ignore: non_constant_identifier_names
   final int vote_count;
   final bool video;
+  // ignore: non_constant_identifier_names
   final String poster_path;
+  // ignore: non_constant_identifier_names
   final String backdrop_path;
   final bool adult;
+  // ignore: non_constant_identifier_names
   final String original_language;
+  // ignore: non_constant_identifier_names
   final String original_title;
+  // ignore: non_constant_identifier_names
   final List<dynamic> genre_ids;
   final String title;
+  // ignore: non_constant_identifier_names
   final num vote_average;
   final String overview;
+  // ignore: non_constant_identifier_names
   final String release_date;
 
   MovieModel.fromJson(Map<String, dynamic> json)
@@ -139,16 +201,3 @@ class MovieModel {
         release_date = json['release_date'],
         backdrop_path = json['backdrop_path'];
 }
-
-/*
-//siglechild scrolling view to provide scrolling for flexible data redering
-      body: SingleChildScrollView(
-        //print Api response on screen
-
-        child: movies != null
-            ? Text("TMDB api response \n $movies")
-            : Text("Loading api response"),
-      ),
-    );
-  }
-}*/
